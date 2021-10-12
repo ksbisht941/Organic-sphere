@@ -35,18 +35,25 @@ export default class Sphere {
   }
 
   setGeometry() {
-    this.geometry = new THREE.SphereGeometry(1, 256, 256);
+    this.geometry = new THREE.SphereGeometry(1, 512, 512);
+    this.geometry.computeTangents();
+
+    console.log(this.geometry);
+
   }
 
   setMaterial() {
     this.material = new THREE.ShaderMaterial({
       uniforms: {
         uDistortionFrequency: { value: 2.0 },
-        uDistortionStrength: { value: 2.175 },
+        uDistortionStrength: { value: 1.0 },
         uDisplacementFrequency: { value: 2.0 },
         uDisplacementStrength: { value: 0.120 },
         uTimeFrequency: { value: 0.0001 },
         uTime: { value: 0 },
+      },
+      defines: {
+          USE_TANGENT: ''
       },
       fragmentShader: fragmentShader,
       vertexShader: vertexShader,

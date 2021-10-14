@@ -64,21 +64,16 @@ void main() {
     // Fresnel
     vec3 viewDirection = normalize(displacedPosition.xyz - cameraPosition);
     float fresnel = uFresnelOffset + (1.0 + dot(viewDirection, computedNormal)) * uFresnelMultiplier;
-    fresnel = pow(fresnel, uFresnelPower);
+    fresnel = pow(max(0.0, fresnel), uFresnelPower);
 
-    // Color
-    float lightAIntensity = max(0.0, - dot(computedNormal.xyz , normalize(- uLightAPosition)));
-  
-    float lightBIntensity = max(0.0, - dot(computedNormal.xyz, normalize(- uLightBPosition)));
+   // Color
+    float lightAIntensity = max(0.0, - dot(computedNormal.xyz, normalize(- uLightAPosition))) * uLightAIntensity;
+    float lightBIntensity = max(0.0, - dot(computedNormal.xyz, normalize(- uLightBPosition))) * uLightBIntensity;
 
     vec3 color = vec3(0.0);
-
     color = mix(color, uLightAColor, lightAIntensity * fresnel);
     color = mix(color, uLightBColor, lightBIntensity * fresnel);
-
-    // color = mix(color, uLightAColor, lightAIntensity); 
-    // color = mix(color, uLightBColor, lightBIntensity); 
-
+    color = mix(color, vec3(1.0), clamp(pow(max(0.0, fresnel - 0.8), 3.0), 0.0, 1.0));
     // Varying 
     vNormal = normal;
     vPerlinStrength = displacedPosition.a; 

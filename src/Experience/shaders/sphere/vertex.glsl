@@ -74,8 +74,7 @@ void main() {
     color = mix(color, uLightAColor, lightAIntensity * fresnel);
     color = mix(color, uLightBColor, lightBIntensity * fresnel);
     color = mix(color, vec3(1.0), clamp(pow(max(0.0, fresnel - 0.8), 3.0), 0.0, 1.0));
+
     // Varying 
-    vNormal = normal;
-    vPerlinStrength = displacedPosition.a; 
     vColor = color;
 }

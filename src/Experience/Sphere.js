@@ -26,6 +26,7 @@ export default class Sphere {
 
     this.setGeometry();
     this.setLights();
+    this.setOffset();
     this.setMaterial();
     this.setMesh();
   }
@@ -109,11 +110,18 @@ export default class Sphere {
   }
 
   setGeometry() {
-    console.time('pwet');
+    console.time("pwet");
     this.geometry = new THREE.SphereGeometry(1, 512, 512);
-    console.timeEnd('pwet');
+    console.timeEnd("pwet");
     this.geometry.computeTangents();
   }
+
+  setOffset()     {
+    this.offset = {}
+    this.offset.spherical = new THREE.Spherical(1, Math.random() * Math.PI, Math.random() * Math.PI * 2)
+    this.offset.direction = new THREE.Vector3()
+    this.offset.direction.setFromSpherical(this.offset.spherical)
+}
 
   setMaterial() {
     this.material = new THREE.ShaderMaterial({
@@ -210,9 +218,19 @@ export default class Sphere {
   setMesh() {
     this.mesh = new THREE.Mesh(this.geometry, this.material);
     this.scene.add(this.mesh);
+
+    // this.points = new THREE.Points(this.geometry, this.material);
+    // this.scene.add(this.points);
   }
 
   update() {
-    this.material.uniforms.uTime.value += this.time.delta * this.timeFrequency;
+    const offsetTime = this.time.elapsed * 0.3
+    this.offset.spherical.phi = ((Math.sin(offsetTime * 0.001) * Math.sin(offsetTime * 0.00321)) * 0.5 + 0.5) * Math.PI
+    this.offset.spherical.theta = ((Math.sin(offsetTime * 0.0001) * Math.sin(offsetTime * 0.000321)) * 0.5 + 0.5) * Math.PI * 2
+    this.offset.direction.setFromSpherical(this.offset.spherical)
+    this.offset.direction.multiplyScalar(0.01)
+
+    this.material.uniforms.uOffset.value.add(this.offset.direction)
+    this.material.uniforms.uTime.value += this.time.delta * this.timeFrequency
   }
 }

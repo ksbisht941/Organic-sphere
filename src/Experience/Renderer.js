@@ -158,10 +158,17 @@ gl_FragColor = color;
           );
         });
 
-      debugFolder
-        .addInput(this.postProcess.unrealBloomPass.compositeMaterial.uniforms.uTintStrength, "value", {
-          label: "uTintStrength", min: 0, max: 1, step: 0.001
-        });
+      debugFolder.addInput(
+        this.postProcess.unrealBloomPass.compositeMaterial.uniforms
+          .uTintStrength,
+        "value",
+        {
+          label: "uTintStrength",
+          min: 0,
+          max: 1,
+          step: 0.001,
+        }
+      );
     }
 
     /**

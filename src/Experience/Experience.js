@@ -11,6 +11,7 @@ import Camera from "./Camera.js";
 import World from "./World.js";
 
 import assets from "./assets.js";
+import Microphone from "./Microphone.js";
 
 export default class Experience {
   static instance;
@@ -39,6 +40,7 @@ export default class Experience {
     this.setRenderer();
     this.setResources();
     this.setWorld();
+    this.setMicrophone();
 
     this.sizes.on("resize", () => {
       this.resize();
@@ -97,10 +99,16 @@ export default class Experience {
     this.world = new World();
   }
 
+  setMicrophone() {
+    this.microphone = new Microphone();
+  }
+
   update() {
     if (this.stats) this.stats.update();
 
     this.camera.update();
+
+    if (this.microphone) this.microphone.update();
 
     if (this.world) this.world.update();
 
@@ -124,6 +132,8 @@ export default class Experience {
     if (this.renderer) this.renderer.resize();
 
     if (this.world) this.world.resize();
+
+    if(this.world) this.world.resize()
   }
 
   destroy() {}

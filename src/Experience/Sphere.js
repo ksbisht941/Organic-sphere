@@ -2,6 +2,7 @@ import * as THREE from "three";
 import Experience from "./Experience";
 import vertexShader from "./shaders/sphere/vertex.glsl";
 import fragmentShader from "./shaders/sphere/fragment.glsl";
+import Microphone from "./Microphone";
 
 export default class Sphere {
   constructor() {
@@ -10,6 +11,7 @@ export default class Sphere {
     this.scene = this.experience.scene;
     this.time = this.experience.time;
     this.timeFrequency = 0.0003;
+    this.microphone = this.experience.microphone;
 
     if (this.debug) {
       this.debugFolder = this.debug.addFolder({
@@ -25,6 +27,7 @@ export default class Sphere {
     }
 
     this.setGeometry();
+    this.setVariations();
     this.setLights();
     this.setOffset();
     this.setMaterial();
@@ -109,6 +112,19 @@ export default class Sphere {
     }
   }
 
+  setVariations() {
+    this.variations = {};
+
+    this.variations.volume = {};
+    this.variations.volume.target = 0;
+    this.variations.volume.current = 0;
+    this.variations.volume.upEasing = 0.03;
+    this.variations.volume.downEasing = 0.002;
+    this.variations.volume.getValue = () => {
+      return this.microphone.volume;
+    };
+  }
+
   setGeometry() {
     console.time("pwet");
     this.geometry = new THREE.SphereGeometry(1, 512, 512);
@@ -116,12 +132,16 @@ export default class Sphere {
     this.geometry.computeTangents();
   }
 
-  setOffset()     {
-    this.offset = {}
-    this.offset.spherical = new THREE.Spherical(1, Math.random() * Math.PI, Math.random() * Math.PI * 2)
-    this.offset.direction = new THREE.Vector3()
-    this.offset.direction.setFromSpherical(this.offset.spherical)
-}
+  setOffset() {
+    this.offset = {};
+    this.offset.spherical = new THREE.Spherical(
+      1,
+      Math.random() * Math.PI,
+      Math.random() * Math.PI * 2
+    );
+    this.offset.direction = new THREE.Vector3();
+    this.offset.direction.setFromSpherical(this.offset.spherical);
+  }
 
   setMaterial() {
     this.material = new THREE.ShaderMaterial({
@@ -224,13 +244,34 @@ export default class Sphere {
   }
 
   update() {
-    const offsetTime = this.time.elapsed * 0.3
-    this.offset.spherical.phi = ((Math.sin(offsetTime * 0.001) * Math.sin(offsetTime * 0.00321)) * 0.5 + 0.5) * Math.PI
-    this.offset.spherical.theta = ((Math.sin(offsetTime * 0.0001) * Math.sin(offsetTime * 0.000321)) * 0.5 + 0.5) * Math.PI * 2
-    this.offset.direction.setFromSpherical(this.offset.spherical)
-    this.offset.direction.multiplyScalar(0.01)
+    console.log(this.variations.volume);
+    this.variations.volume.target = this.variations.volume.getValue();
+    const easing =
+      this.variations.volume.target > this.variations.volume.current
+        ? this.variations.volume.upEasing
+        : this.variations.volume.downEasing;
+    this.variations.volume.current +=
+      (this.variations.volume.target - this.variations.volume.current) *
+      easing *
+      this.time.delta;
+    this.material.uniforms.uDisplacementStrength.value =
+      this.variations.volume.current;
 
-    this.material.uniforms.uOffset.value.add(this.offset.direction)
-    this.material.uniforms.uTime.value += this.time.delta * this.timeFrequency
+    // Offset
+    const offsetTime = this.time.elapsed * 0.3;
+    this.offset.spherical.phi =
+      (Math.sin(offsetTime * 0.001) * Math.sin(offsetTime * 0.00321) * 0.5 +
+        0.5) *
+      Math.PI;
+    this.offset.spherical.theta =
+      (Math.sin(offsetTime * 0.0001) * Math.sin(offsetTime * 0.000321) * 0.5 +
+        0.5) *
+      Math.PI *
+      2;
+    this.offset.direction.setFromSpherical(this.offset.spherical);
+    this.offset.direction.multiplyScalar(0.01);
+
+    this.material.uniforms.uOffset.value.add(this.offset.direction);
+    this.material.uniforms.uTime.value += this.time.delta * this.timeFrequency;
   }
 }

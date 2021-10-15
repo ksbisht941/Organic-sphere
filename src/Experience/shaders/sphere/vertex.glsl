@@ -2,31 +2,30 @@
 
 uniform vec3 uLightAColor;
 uniform vec3 uLightAPosition;
-uniform float uLightAIntensity ;
-
+uniform float uLightAIntensity;
 uniform vec3 uLightBColor;
 uniform vec3 uLightBPosition;
-uniform float  uLightBIntensity;
+uniform float uLightBIntensity;
 
 uniform vec2 uSubdivision;
+
+uniform vec3 uOffset;
 
 uniform float uDistortionFrequency;
 uniform float uDistortionStrength;
 uniform float uDisplacementFrequency;
 uniform float uDisplacementStrength;
 
-uniform float uTime;
-
-varying vec3 vNormal;
-varying float vPerlinStrength;
-varying vec3 vColor;
-
 uniform float uFresnelOffset;
 uniform float uFresnelMultiplier;
 uniform float uFresnelPower;
 
-#pragma glslify: perlin4d = require('../partials/perlin4d.glsl');
-#pragma glslify: perlin3d = require('../partials/perlin3d.glsl');
+uniform float uTime;
+
+varying vec3 vColor;
+
+#pragma glslify: perlin4d = require('../partials/perlin4d.glsl')
+#pragma glslify: perlin3d = require('../partials/perlin3d.glsl')
 
 vec4 getDisplacedPosition(vec3 _position) {
      vec3 displacementPosition = _position;

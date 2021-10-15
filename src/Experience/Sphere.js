@@ -109,10 +109,10 @@ export default class Sphere {
   }
 
   setGeometry() {
+    console.time('pwet');
     this.geometry = new THREE.SphereGeometry(1, 512, 512);
+    console.timeEnd('pwet');
     this.geometry.computeTangents();
-
-    console.log(this.geometry);
   }
 
   setMaterial() {

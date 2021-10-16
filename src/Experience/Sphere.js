@@ -13,6 +13,8 @@ export default class Sphere {
     this.timeFrequency = 0.0003;
     this.microphone = this.experience.microphone;
 
+    this.elapsedTime = 0;
+
     if (this.debug) {
       this.debugFolder = this.debug.addFolder({
         title: "sphere",
@@ -121,8 +123,74 @@ export default class Sphere {
     this.variations.volume.upEasing = 0.03;
     this.variations.volume.downEasing = 0.002;
     this.variations.volume.getValue = () => {
-      return this.microphone.volume;
+      const level0 = this.microphone.levels[0] || 0;
+      const level1 = this.microphone.levels[1] || 0;
+      const level2 = this.microphone.levels[2] || 0;
+
+      return Math.max(level0, level1, level2) * 0.3;
     };
+
+    this.variations.volume.getDefault = () =>
+    {
+        return 0.152
+    }
+
+    this.variations.lowLevel = {};
+    this.variations.lowLevel.target = 0;
+    this.variations.lowLevel.current = 0;
+    this.variations.lowLevel.upEasing = 0.005;
+    this.variations.lowLevel.downEasing = 0.002;
+    this.variations.lowLevel.getValue = () => {
+      let value = this.microphone.levels[0] || 0;
+      value *= 0.003;
+      value += 0.0001;
+      value = Math.max(0, value);
+
+      return value;
+    };
+
+    this.variations.lowLevel.getDefault = () =>
+    {
+        return 0.0003
+    }
+
+    this.variations.mediumLevel = {};
+    this.variations.mediumLevel.target = 0;
+    this.variations.mediumLevel.current = 0;
+    this.variations.mediumLevel.upEasing = 0.008;
+    this.variations.mediumLevel.downEasing = 0.004;
+    this.variations.mediumLevel.getValue = () => {
+      let value = this.microphone.levels[1] || 0;
+      value *= 2;
+      value += 3.587;
+      value = Math.max(3.587, value);
+
+      return value;
+    };
+
+    this.variations.mediumLevel.getDefault = () =>
+    {
+        return 3.587
+    }
+
+    this.variations.highLevel = {};
+    this.variations.highLevel.target = 0;
+    this.variations.highLevel.current = 0;
+    this.variations.highLevel.upEasing = 0.02;
+    this.variations.highLevel.downEasing = 0.001;
+    this.variations.highLevel.getValue = () => {
+      let value = this.microphone.levels[2] || 0;
+      value *= 5;
+      value += 0.5;
+      value = Math.max(0.5, value);
+
+      return value;
+    };
+
+    this.variations.highLevel.getDefault = () =>
+    {
+        return 0.65
+    }
   }
 
   setGeometry() {
@@ -244,21 +312,33 @@ export default class Sphere {
   }
 
   update() {
-    console.log(this.variations.volume);
-    this.variations.volume.target = this.variations.volume.getValue();
-    const easing =
-      this.variations.volume.target > this.variations.volume.current
-        ? this.variations.volume.upEasing
-        : this.variations.volume.downEasing;
-    this.variations.volume.current +=
-      (this.variations.volume.target - this.variations.volume.current) *
-      easing *
-      this.time.delta;
+    // Update Variation
+    for (const _variationName in this.variations) {
+      const variation = this.variations[_variationName];
+      variation.target = this.microphone.ready ? variation.getValue() : variation.getDefault()
+
+      const easing =
+        variation.target > variation.current
+          ? variation.upEasing
+          : variation.downEasing;
+      variation.current +=
+        (variation.target - variation.current) * easing * this.time.delta;
+    }
+
+    // Time
+    this.timeFrequency = this.variations.lowLevel.current;
+    this.elapsedTime = this.time.delta * this.timeFrequency;
+
+    // Update material
     this.material.uniforms.uDisplacementStrength.value =
       this.variations.volume.current;
+    this.material.uniforms.uDistortionStrength.value =
+      this.variations.highLevel.current;
+    this.material.uniforms.uFresnelMultiplier.value =
+      this.variations.mediumLevel.current;
 
     // Offset
-    const offsetTime = this.time.elapsed * 0.3;
+    const offsetTime = this.elapsedTime * 0.3;
     this.offset.spherical.phi =
       (Math.sin(offsetTime * 0.001) * Math.sin(offsetTime * 0.00321) * 0.5 +
         0.5) *
@@ -269,9 +349,9 @@ export default class Sphere {
       Math.PI *
       2;
     this.offset.direction.setFromSpherical(this.offset.spherical);
-    this.offset.direction.multiplyScalar(0.01);
+    this.offset.direction.multiplyScalar(this.timeFrequency * 2);
 
     this.material.uniforms.uOffset.value.add(this.offset.direction);
-    this.material.uniforms.uTime.value += this.time.delta * this.timeFrequency;
+    this.material.uniforms.uTime.value += this.elapsedTime;
   }
 }

@@ -1,4 +1,5 @@
-@font-face {
+@font-face
+{
     font-family: 'Ailerons';
     src: url('./fonts/subset-Ailerons-Regular.woff2') format('woff2'),
         url('./fonts/subset-Ailerons-Regular.woff') format('woff');
@@ -7,29 +8,31 @@
     font-display: block;
 }
 
-* {
+*
+{
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
-*::selection {
+*::selection
+{
     /* color: #aaaaaa; */
     background: #ffffff22;
 }
 
-
 html,
-body {
+body
+{
     overflow: hidden;
 }
 
-.experience {
+.experience
+{
     position: fixed;
     width: 100vw;
     height: 100vh;
 }
-
 
 .credits
 {
@@ -62,4 +65,4 @@ body {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-shadow: 0 0 10px rgba(0, 0, 0, 0.7);
-} 
+}
